@@ -3,7 +3,6 @@ import API from "./api";
 
 import AddTodo from "./components/AddTodo";
 import TodoList from "./components/TodoList";
-import FilterBar from "./components/FilterBar";
 import EditTodoModal from "./components/EditTodoModal";
 import Navbar from "./components/Navbar";
 
@@ -11,12 +10,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
   const [todos, setTodos] = useState([]);
-  const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [editTodo, setEditTodo] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
 
-  // Fetch Todos
+  // Fetch all todos
   const fetchTodos = async () => {
     try {
       setLoading(true);
@@ -33,17 +31,17 @@ function App() {
     fetchTodos();
   }, []);
 
-  // Add Todo
+  // Add todo
   const addTodo = async (text) => {
     try {
       await API.post("/todos", { text });
-      fetchTodos();
+      fetchTodos(); // refresh list
     } catch (error) {
       console.error("Error adding todo:", error);
     }
   };
 
-  // Toggle Complete
+  // Toggle complete
   const toggleTodo = async (id) => {
     try {
       await API.put(`/todos/${id}`);
@@ -53,7 +51,7 @@ function App() {
     }
   };
 
-  // Delete Todo
+  // Delete todo
   const deleteTodo = async (id) => {
     try {
       await API.delete(`/todos/${id}`);
@@ -63,7 +61,7 @@ function App() {
     }
   };
 
-  // Edit Todo
+  // Edit todo
   const handleEditSave = async (text) => {
     try {
       await API.put(`/todos/${editTodo._id}`, { text });
@@ -73,13 +71,6 @@ function App() {
       console.error("Error editing todo:", error);
     }
   };
-
-  // Filter Logic
-  const filteredTodos = todos.filter((todo) => {
-    if (filter === "completed") return todo.completed;
-    if (filter === "pending") return !todo.completed;
-    return true;
-  });
 
   return (
     <div className={darkMode ? "bg-dark text-light min-vh-100" : "min-vh-100"}>
@@ -95,15 +86,12 @@ function App() {
         {/* Add Todo */}
         <AddTodo onAdd={addTodo} />
 
-        {/* Filters */}
-        <FilterBar filter={filter} setFilter={setFilter} />
-
         {/* Todo List */}
         {loading ? (
           <p className="text-center">Loading...</p>
         ) : (
           <TodoList
-            todos={filteredTodos}
+            todos={todos}
             onToggle={toggleTodo}
             onDelete={deleteTodo}
             onEdit={setEditTodo}
